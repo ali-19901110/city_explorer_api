@@ -3,8 +3,8 @@ const express = require('express')
 const cors = require('cors'); 
 const app = express(); 
 app.use(cors());
-const port = 7000; 
-app.listen( port , ()=>{console.log('conected server .......')});
+const PORT = 7000; 
+app.listen( PORT , ()=>{console.log('conected server .......')});
 function CityExpoler(search_query, formatted_query, latitude, longitude) {
     this.search_query = search_query,
     this.formatted_query = formatted_query,
