@@ -5,16 +5,30 @@ require('dotenv').config();// Load Environment Variables from the .env file
 const express = require('express') 
 const cors = require('cors'); 
 const superagent = require('superagent');
+const pg = require('pg'); // add 
 
 let lon ;
 let lat;
 const PORT = process.env.PORT;
 const app = express(); 
+const client = new pg.Client(process.env.DATABASE_URL);
+client.on('error', err => console.log("PG PROBLEM!!!") );
 app.use(cors());
 app.use(errorHandler);
 function errorHandler(err, request, response, next) {
     response.status(500).send('something is wrong in server');
   }
+
+
+  app.get('/locations', (request, response)=> {
+    let SQL = 'SELECT * FROM locations';
+    client.query(SQL).then(result=> {
+        console.log(result.rows);
+        response.send(result.rows);
+    });
+});
+
+
 function CityExpoler(search_query, formatted_query, latitude, longitude) {
     this.search_query = search_query,
     this.formatted_query = formatted_query,
@@ -24,15 +38,19 @@ function CityExpoler(search_query, formatted_query, latitude, longitude) {
 }
 // app.get('/location',getLocation);
 app.get('/location',locationHandler);
+
 const myLocalLocations = {};
 function locationHandler(request, response) {
+  let SQL = 'INSERT INTO locations (search_query, formatted_query,latitude,longitude) VALUES($1, $2,$3,$4) RETURNING *';
   
     let city = request.query.city;
-    if (myLocalLocations[city]) {
-        // console.log("2.from my local data")
-        response.send(myLocalLocations[city]);
+    //query to check if the search_query is exist in table
+    let SQL1=`SELECT locations.search_query FROM locations WHERE locations.search_query =${city}`;
+    // if (myLocalLocations[city]) {
+    //     // console.log("2.from my local data")
+    //     response.send(myLocalLocations[city]);
       
-      }else{
+    //   }else{
     // console.log("request.query:", request.query)
 
     console.log("1.from the location API")
@@ -44,15 +62,25 @@ function locationHandler(request, response) {
         const formatted_query = res.body[0].display_name;
             const latitude = res.body[0].lat;
             const longitude = res.body[0].lon;
+
            lat = res.body[0].lat;
            lon = res.body[0].lon;
+           let values = [city, formatted_query,latitude,longitude];
+           //check if the data is exist in table
+          // if(SQL1){
+           client.query(SQL, values).then(result=> {
+            console.log(result.rows);
+            response.send(result.rows);
+        });
+      // }
+        // else{
             let cityLocation = new CityExpoler(city, formatted_query, latitude, longitude);
             response.send(cityLocation); 
-              myLocalLocations[city] = cityLocation;
-    
+              // myLocalLocations[city] = cityLocation;
+    // }
   
       });
-    }
+    // }
   }
 
 
@@ -109,8 +137,8 @@ app.use('*', (requst, response) => {
     response.status(status).send({status:status , msg:'Not found'});
   });
 
-
-// app.listen(process.env.PORT ||5000, () => console.log(`App is listening on ${PORT}`));
-app.listen(process.env.PORT || 6004, () =>console.log(`App is running on Server on port: 6004`))
-// server.listen(process.env.PORT , () =>console.log(`App is running on Server on port`))
-// app.listen(PORT, ()=>{console.log('conected server .......')});
+//check is the database is connected
+client.connect().then(()=> {
+  console.log("connected yessssssssssssss");
+  app.listen(process.env.PORT || 6009, ()=> console.log(`App is running on ${PORT}`));
+});
