@@ -110,5 +110,6 @@ app.use('*', (requst, response) => {
   });
 
 
-app.listen(PORT, () => console.log(`App is listening on ${PORT}`));
+app.listen(process.env.PORT , () => console.log(`App is listening on ${PORT}`));
+// server.listen(process.env.PORT , () =>console.log(`App is running on Server on port`))
 // app.listen(PORT, ()=>{console.log('conected server .......')});
