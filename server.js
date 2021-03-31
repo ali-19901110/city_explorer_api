@@ -12,7 +12,7 @@ let lon ;
 let lat;
 const PORT = process.env.PORT;
 const app = express(); 
-const client = new pg.Client(process.env.HEROKU_POSTGRESQL_ORANGE_URL);
+const client = new pg.Client(process.env.DATABASE_URL);
 client.on('error', err => console.log("PG PROBLEM!!!") );
 app.use(cors());
 app.use(errorHandler);
