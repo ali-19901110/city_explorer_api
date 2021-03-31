@@ -38,12 +38,12 @@ function CityExpoler(search_query, formatted_query, latitude, longitude) {
     // myLocalLocations.push(this);
 }
 // app.get('/location',getLocation);
-app.get('/',(requst,response)=>{
-  let SQL ='SELECT * FROM locations';
-  client.query(SQL).then((res)=>{
-    response.send(res.rows);
-  })
-})
+// app.get('/',(requst,response)=>{
+//   let SQL ='SELECT * FROM locations';
+//   client.query(SQL).then((res)=>{
+//     response.send(res.rows);
+//   })
+// })
 app.get('/location',locationHandler);
 
 const myLocalLocations = {};
@@ -138,5 +138,5 @@ app.use('*', (requst, response) => {
 //check is the database is connected
 client.connect().then(()=> {
   console.log("connected yessssssssssssss");
-  app.listen(process.env.PORT || 6009, ()=> console.log(`App is running on ${PORT}`));
+  app.listen(process.env.PORT || 6009, ()=> console.log(`App is running on `));
 });
