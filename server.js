@@ -40,47 +40,38 @@ function CityExpoler(search_query, formatted_query, latitude, longitude) {
 app.get('/location',locationHandler);
 
 const myLocalLocations = {};
-function locationHandler(request, response) {
-  let SQL = 'INSERT INTO locations (search_query, formatted_query,latitude,longitude) VALUES($1, $2,$3,$4) RETURNING *';
-  
+function locationHandler(request, response) {  
     let city = request.query.city;
-    //query to check if the search_query is exist in table
-    let SQL1=`SELECT locations.search_query FROM locations WHERE locations.search_query =${city}`;
-    // if (myLocalLocations[city]) {
-    //     // console.log("2.from my local data")
-    //     response.send(myLocalLocations[city]);
-      
-    //   }else{
-    // console.log("request.query:", request.query)
+    let SQL = `SELECT * FROM locations where search_query = $1`;
+    let key = process.env.YOUR_ACCESS_TOKEN;
 
-    console.log("1.from the location API")
-      let key = process.env.YOUR_ACCESS_TOKEN;
+    client.query(SQL, [city]).then(result=> {
+      if(result.rowCount > 0){
+        console.log(result.rows);
+        response.send(result.rows[0]);
+      }else{
       const url = `https://eu1.locationiq.com/v1/search.php?key=${key}&q=${city}&format=json`;
       superagent.get(url).then(res=> {
-        // use response.body to get the response data itself
-        console.log(res.body[0]);
+        // console.log(res.body[0]);
         const formatted_query = res.body[0].display_name;
-            const latitude = res.body[0].lat;
-            const longitude = res.body[0].lon;
-
+        const latitude = res.body[0].lat;
+        const longitude = res.body[0].lon;
            lat = res.body[0].lat;
            lon = res.body[0].lon;
+           let SQL = 'INSERT INTO locations (search_query, formatted_query,latitude,longitude) VALUES($1, $2,$3,$4) RETURNING *';
            let values = [city, formatted_query,latitude,longitude];
-           //check if the data is exist in table
-          // if(SQL1){
-           client.query(SQL, values).then(result=> {
-            console.log(result.rows);
-            response.send(result.rows);
-        });
-      // }
-        // else{
             let cityLocation = new CityExpoler(city, formatted_query, latitude, longitude);
-            response.send(cityLocation); 
-              // myLocalLocations[city] = cityLocation;
-    // }
-  
+            client.query(SQL, values) 
+            response.send(cityLocation);
+                      // response.send(); 
       });
-    // }
+
+      }
+   
+  });
+      
+    
+ 
   }
 
 
@@ -93,7 +84,7 @@ app.get('/weather' , getWeather);
 function getWeather (req , response){
     const query =req.query.city;
   
-      const url = `https://api.weatherbit.io/v2.0/forecast/daily?lat=${lat}&lon=${lon}&key=${process.env.WEATHER_API_KEY}`;
+      const url =`https://api.weatherbit.io/v2.0/forecast/daily?lat=${lat}&lon=${lon}&key=${process.env.WEATHER_API_KEY}`;
     superagent.get(url).then(res=> {
       let curtWeather = [];
       // console.log(res.body.data);
@@ -127,8 +118,7 @@ function handelPark(request, response) {
               return parks;
           })
           response.send(parks)
-      })
-   
+      })  
 }
 
 
