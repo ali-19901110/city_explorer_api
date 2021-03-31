@@ -8,12 +8,12 @@ const superagent = require('superagent');
 const pg = require('pg'); // add 
 const { response } = require('express');
 
-let lon ;
-let lat;
+let lon="" ;
+let lat="";
 const PORT = process.env.PORT;
 const app = express(); 
 const client = new pg.Client(process.env.DATABASE_URL);
-client.on('error', err => console.log("PG PROBLEM!!!") );
+// client.on('error', err => console.log("PG PROBLEM!!!") );
 app.use(cors());
 app.use(errorHandler);
 function errorHandler(err, request, response, next) {
@@ -21,13 +21,13 @@ function errorHandler(err, request, response, next) {
   }
 
 
-  app.get('/locations', (request, response)=> {
-    let SQL = 'SELECT * FROM locations';
-    client.query(SQL).then(result=> {
-        console.log(result.rows);
-        response.send(result.rows);
-    });
-});
+//   app.get('/locations', (request, response)=> {
+//     let SQL = 'SELECT * FROM locations';
+//     client.query(SQL).then(result=> {
+//         console.log(result.rows);
+//         response.send(result.rows);
+//     });
+// });
 
 
 function CityExpoler(search_query, formatted_query, latitude, longitude) {
@@ -55,6 +55,8 @@ function locationHandler(request, response) {
     client.query(SQL, [city]).then(result=> {
       if(result.rowCount > 0){
         console.log(result.rows);
+        lat = result.rows[0].latitude;
+        lon = result.rows[0].longitude;
         response.send(result.rows[0]);
       }else{
       const url = `https://eu1.locationiq.com/v1/search.php?key=${key}&q=${city}&format=json`;
@@ -89,18 +91,20 @@ function locationHandler(request, response) {
 
 app.get('/weather' , getWeather);
 function getWeather (req , response){
-    const query =req.query.city;
-  
-      const url = `https://api.weatherbit.io/v2.0/forecast/daily?lat=${lat}&lon=${lon}&key=${process.env.WEATHER_API_KEY}`;
+    // const query =req.query.city;
+    console.log("tesssssssssssst");
+      // const url = `https://api.weatherbit.io/v2.0/forecast/daily?lat=${lat}&lon=${lon}&key=${process.env.WEATHER_API_KEY}`;
+     const url = `https://api.weatherbit.io/v2.0/forecast/daily?&lat=${lat}&lon=${lon}&key=${process.env.WEATHER_API_KEY}`
     superagent.get(url).then(res=> {
-      let curtWeather = [];
-      // console.log(res.body.data);
+      // let curtWeather = [];
+      // console.log(res.body);
 
-    res.body.data.forEach(item => {
-      curtWeather.push(new Weather(item));
-        return curtWeather;
-    })
-    response.send(curtWeather);
+   response.send(res.body.data.map(item => 
+    
+    new Weather(item)
+      // return curtWeather;
+  )) 
+    // response.send(newweather);
 
     });
 }
