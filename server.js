@@ -18,6 +18,8 @@ function errorHandler(err, request, response, next) {
   }
   let lon="" ;
   let lat="";
+  let locationv="";
+
 //   app.get('/locations', (request, response)=> {
 //     let SQL = 'SELECT * FROM locations';
 //     client.query(SQL).then(result=> {
@@ -46,6 +48,7 @@ app.get('/location',locationHandler);
 const myLocalLocations = {};
 function locationHandler(request, response) {  
     let city = request.query.city;
+    locationv = city;
     let SQL = 'SELECT * FROM locations where search_query = $1';
     let key = process.env.YOUR_ACCESS_TOKEN;
 
@@ -130,6 +133,32 @@ function handelPark(request, response) {
    
 }
 
+
+app.get('/movies',handalmovie)
+function handalmovie(req, res) {
+  let key = process.env.MOVIE_API_KEY;
+  let city = req.query.search_query;
+  const url = `https://api.themoviedb.org/3/search/movie?api_key=${key}&query=${city}`;
+  superagent.get(url).then(result => {
+      res.send(result.body.results);
+  })
+}
+
+let flag =0;
+let testarr=[]
+app.get('/yelp', handelyelp);
+
+function handelyelp(request, response) {
+  // console.log(`moveeeeeeeeeeeeees = ${locationv}`);
+  let url = `https://api.yelp.com/v3/businesses/search?categories=restaurants&limit=20&latitude=${lat}&longitude=${lon}`;
+  superagent.get(url)
+  .set('Authorization', 'Bearer j7f_GkVTy4ukGINLVe3Kb_NH-LVNjE3kzTDyGHersSMutFqUMlH3oTMjAYuX5uICbT738zJjLLczs2kth-M2AlDfblZLtzIw8JjsQ1z1ORiVBuMXLN1liD_wtJVkYHYx')
+  .then(result => {
+    console.log(typeof result.body.businesses)
+    const allDres = result.body.businesses;
+       response.send(allDres);
+  })  
+}
 
 app.use('*', (requst, response) => {
     let status = 404;
