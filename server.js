@@ -6,12 +6,13 @@ const express = require('express')
 const cors = require('cors'); 
 const superagent = require('superagent');
 const pg = require('pg'); // add 
+const { response } = require('express');
 
 let lon ;
 let lat;
 const PORT = process.env.PORT;
 const app = express(); 
-const client = new pg.Client(process.env.DATABASE_URL);
+const client = new pg.Client(process.env.HEROKU_POSTGRESQL_ORANGE_URL);
 client.on('error', err => console.log("PG PROBLEM!!!") );
 app.use(cors());
 app.use(errorHandler);
@@ -37,12 +38,18 @@ function CityExpoler(search_query, formatted_query, latitude, longitude) {
     // myLocalLocations.push(this);
 }
 // app.get('/location',getLocation);
+app.get('/',(requst,response)=>{
+  let SQL ='SELECT * FROM locations';
+  client.query(SQL).then((res)=>{
+    response.send(res.rows);
+  })
+})
 app.get('/location',locationHandler);
 
 const myLocalLocations = {};
 function locationHandler(request, response) {  
     let city = request.query.city;
-    let SQL = `SELECT * FROM locations where search_query = $1`;
+    let SQL = 'SELECT * FROM locations where search_query = $1';
     let key = process.env.YOUR_ACCESS_TOKEN;
 
     client.query(SQL, [city]).then(result=> {
@@ -84,7 +91,7 @@ app.get('/weather' , getWeather);
 function getWeather (req , response){
     const query =req.query.city;
   
-      const url =`https://api.weatherbit.io/v2.0/forecast/daily?lat=${lat}&lon=${lon}&key=${process.env.WEATHER_API_KEY}`;
+      const url = `https://api.weatherbit.io/v2.0/forecast/daily?lat=${lat}&lon=${lon}&key=${process.env.WEATHER_API_KEY}`;
     superagent.get(url).then(res=> {
       let curtWeather = [];
       // console.log(res.body.data);
@@ -118,7 +125,8 @@ function handelPark(request, response) {
               return parks;
           })
           response.send(parks)
-      })  
+      })
+   
 }
 
 
