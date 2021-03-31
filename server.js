@@ -6,10 +6,7 @@ const express = require('express')
 const cors = require('cors'); 
 const superagent = require('superagent');
 const pg = require('pg'); // add 
-const { response } = require('express');
-
-let lon="" ;
-let lat="";
+// const { response } = require('express');
 const PORT = process.env.PORT;
 const app = express(); 
 const client = new pg.Client(process.env.DATABASE_URL);
@@ -19,8 +16,8 @@ app.use(errorHandler);
 function errorHandler(err, request, response, next) {
     response.status(500).send('something is wrong in server');
   }
-
-
+  let lon="" ;
+  let lat="";
 //   app.get('/locations', (request, response)=> {
 //     let SQL = 'SELECT * FROM locations';
 //     client.query(SQL).then(result=> {
